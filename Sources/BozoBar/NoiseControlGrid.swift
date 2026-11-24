@@ -19,6 +19,18 @@ enum NoiseIcon {
     static let immersiveSymbols: [String] = ["speaker.slash", "dot.radiowaves.left.and.right", "move.3d"]
 }
 
+/// macOS draws a focus ring around a focused plain button. The grid already shows
+/// selection with its own disc, so the ring only adds noise; focus itself is kept.
+private struct HideFocusRing: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(macOS 14.0, *) {
+            content.focusEffectDisabled()
+        } else {
+            content
+        }
+    }
+}
+
 /// Icon-over-label selector laid out like the system noise-control picker.
 /// The selection follows the value the headset reports back, never a local guess.
 struct NoiseControlGrid: View {
@@ -94,6 +106,7 @@ struct NoiseControlGrid: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .modifier(HideFocusRing())
         .disabled(!enabled)
         .opacity(enabled ? 1 : 0.45)
         .accessibilityLabel(item.title)

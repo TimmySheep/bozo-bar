@@ -87,6 +87,16 @@ final class BozoBarApp: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         fitPopover(to: host.sizeThatFits(in: NSSize(width: 300, height: CGFloat.greatestFiniteMagnitude)))
         popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
         guard popover.isShown else { return }
+        // A status-bar popover only dismisses itself on outside clicks once the app is
+        // active and the popover window is key; showing it is not enough.
+        if #available(macOS 14.0, *) {
+            NSApp.activate()
+        } else {
+            NSApp.activate(ignoringOtherApps: true)
+        }
+        popover.contentViewController?.view.window?.makeKey()
+        // Nothing in the panel should start out holding keyboard focus.
+        popover.contentViewController?.view.window?.makeFirstResponder(nil)
         refreshVisibleMode()
         let timer = Timer(timeInterval: 2, target: self, selector: #selector(refreshVisibleMode), userInfo: nil, repeats: true)
         modeTimer = timer

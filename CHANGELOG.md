@@ -2,6 +2,15 @@
 
 All notable changes to this local build. Upstream commits are preserved in history; entries below cover only local work.
 
+## 1.0.6 — build 8
+
+### Fixed
+- Clicking anywhere outside the panel now dismisses it. A status-bar popover only honours
+  `.transient` once the app is active and the popover window is key, so the panel activates the
+  app and makes itself key when it opens.
+- The keyboard focus ring no longer draws a blue frame around a noise-control cell
+  (`focusEffectDisabled`); selection is still shown by the blue disc.
+
 ## 1.0.5 — build 7
 
 ### Changed
