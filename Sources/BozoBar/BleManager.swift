@@ -75,9 +75,13 @@ final class BleManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
 
     // MARK: - Public API
 
+    func refreshAudioMode() {
+        guard state.connected else { return }
+        sendControl(BmapProtocol.queryCurrentMode())
+    }
+
     func setAudioMode(_ index: UInt8) {
         guard state.connected else { return }
-        state.audioModeIndex = index
         sendControl(BmapProtocol.setCurrentMode(index))
         refreshAfterControl(BmapProtocol.queryCurrentMode())
     }
@@ -474,6 +478,25 @@ final class BleManager: NSObject, ObservableObject, CBCentralManagerDelegate, CB
         for (i, query) in queries.enumerated() {
             DispatchQueue.main.asyncAfter(deadline: .now() + Double(i) * 0.15) { [weak self] in
                 self?.send(query)
+            }
+        }
+
+        // QC Ultra (Gen 1) answers the AudioModes GetAll query with ERROR 0x05,
+        // so the mode list stays empty and the UI renders no noise-control rows.
+        // Enumerate the slots directly instead: 1f/06 GET per slot 0..9.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { [weak self] in
+            guard let self, self.state.connected, self.state.audioModes.isEmpty else { return }
+            log.info("AudioModes GetAll gave no list; probing slots 0..9")
+            self.probeModeSlots()
+        }
+    }
+
+    /// Reads each audio-mode slot individually. QC Ultra (Gen 1) needs this
+    /// because it has no GetAll list; slot 10 and above answer ERROR 0x08.
+    private func probeModeSlots() {
+        for idx in UInt8(0)...UInt8(9) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + Double(idx) * 0.15) { [weak self] in
+                self?.send(BmapProtocol.queryModeConfig(idx))
             }
         }
     }
