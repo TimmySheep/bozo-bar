@@ -2,6 +2,12 @@
 
 All notable changes to this local build. Upstream commits are preserved in history; entries below cover only local work.
 
+## 1.0.5 — build 7
+
+### Changed
+- Unselected noise-control options now show a grey disc of exactly the same size as the selected blue one, so nothing shifts when the selection moves.
+- Selecting an option blooms the blue disc out of its centre with a spring curve; the grey disc fades out and the glyph switches to white.
+
 ## 1.0.4 — build 6
 
 ### Added

@@ -20,7 +20,7 @@ enum NoiseIcon {
 }
 
 /// Icon-over-label selector laid out like the system noise-control picker.
-/// Selection always mirrors the value read back from the headset.
+/// The selection follows the value the headset reports back, never a local guess.
 struct NoiseControlGrid: View {
     let title: String
     let items: [NoiseControlItem]
@@ -29,6 +29,7 @@ struct NoiseControlGrid: View {
     let onSelect: (UInt8) -> Void
 
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 6), count: 3)
+    private let disc: CGFloat = 38
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -61,15 +62,28 @@ struct NoiseControlGrid: View {
         } label: {
             VStack(spacing: 5) {
                 ZStack {
+                    // Unselected disc: same bounds as the selected one, so nothing shifts.
                     Circle()
-                        .fill(isOn ? Color.accentColor : Color.clear)
-                        .frame(width: 38, height: 38)
+                        .fill(Color.primary.opacity(0.06))
+                        .overlay(
+                            Circle().strokeBorder(Color.primary.opacity(0.10), lineWidth: 0.8)
+                        )
+                        .opacity(isOn ? 0 : 1)
+
+                    // Selected disc grows from the centre on a spring curve.
+                    Circle()
+                        .fill(Color.accentColor)
+                        .scaleEffect(isOn ? 1 : 0.05)
+                        .opacity(isOn ? 1 : 0)
+
                     Image(systemName: item.symbol)
                         .font(.system(size: 17, weight: .regular))
                         .symbolRenderingMode(.monochrome)
                         .foregroundStyle(isOn ? Color.white : Color.secondary)
                 }
-                .frame(width: 38, height: 38)
+                .frame(width: disc, height: disc)
+                .animation(.spring(response: 0.34, dampingFraction: 0.72), value: isOn)
+
                 Text(item.title)
                     .font(.system(size: 11, weight: .semibold))
                     .foregroundStyle(isOn ? Color.primary : Color.secondary)
