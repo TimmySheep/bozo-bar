@@ -72,6 +72,7 @@ struct MenuContent: View {
                 }
                 .buttonStyle(.borderless)
                 .foregroundStyle(.secondary)
+                .keyboardShortcut("q", modifiers: .command)
             }
             .padding(.horizontal, 12)
             .padding(.bottom, 10)
@@ -197,11 +198,13 @@ struct MenuContent: View {
                 }
                 .buttonStyle(.borderless)
                 .foregroundStyle(.secondary)
+                .accessibilityLabel("Settings")
                 Button("Quit") {
                     NSApplication.shared.terminate(nil)
                 }
                 .buttonStyle(.borderless)
                 .foregroundStyle(.secondary)
+                .keyboardShortcut("q", modifiers: .command)
             }
             .padding(.horizontal, 12)
             .padding(.bottom, 10)
@@ -217,6 +220,7 @@ struct MenuContent: View {
                     Image(systemName: "chevron.left")
                 }
                 .buttonStyle(.borderless)
+                .accessibilityLabel("Back")
                 Text("Settings")
                     .font(.headline)
                 Spacer()
@@ -239,6 +243,7 @@ struct MenuContent: View {
                 }
                 .buttonStyle(.borderless)
                 .foregroundStyle(.secondary)
+                .keyboardShortcut("q", modifiers: .command)
             }
             .padding(.horizontal, 12)
             .padding(.bottom, 10)
@@ -312,18 +317,17 @@ struct MenuContent: View {
     }
 
     private func selectableRow(title: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            HStack {
-                Text(title)
-                Spacer()
-                if isSelected {
-                    Image(systemName: "checkmark")
-                        .foregroundStyle(.secondary)
-                }
+        Toggle(isOn: Binding(
+            get: { isSelected },
+            set: { requested in
+                if requested && !isSelected { action() }
             }
-            .contentShape(Rectangle())
+        )) {
+            Text(title).frame(maxWidth: .infinity, alignment: .leading)
         }
-        .buttonStyle(.plain)
+        .toggleStyle(.button)
+        .tint(.gray)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
         .padding(.horizontal, 12)
         .padding(.vertical, 4)
     }
