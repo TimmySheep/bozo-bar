@@ -2,6 +2,17 @@
 
 All notable changes to this local build. Upstream commits are preserved in history; entries below cover only local work.
 
+## 1.0.4 — build 6
+
+### Added
+- Noise control is now an icon-over-label grid: `person.crop.circle` (Quiet), `person.wave.2` (Aware), `person.and.background.dotted` (Immersion). The highlighted cell mirrors the mode read back from the headset.
+- Immersive audio uses the same grid: `speaker.slash` (Off), `dot.radiowaves.left.and.right` (Still), `move.3d` (Motion).
+
+### Changed
+- Standby Timer moved out of the panel into Settings.
+- Reconnect / Power Off / Quit now use bordered system buttons instead of bare text.
+- Panel sections keep system typography and the single system popover; no custom chrome is drawn.
+
 ## 1.0.3 — build 5
 
 ### Fixed

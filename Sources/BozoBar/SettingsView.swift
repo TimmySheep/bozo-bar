@@ -28,6 +28,21 @@ struct SettingsView: View {
 
             Divider()
 
+            HStack {
+                Text("Standby Timer")
+                Spacer()
+                Picker("Standby Timer", selection: standbyBinding) {
+                    ForEach(standbyOptions, id: \.self) { minutes in
+                        Text(minutes == 0 ? "Never" : "\(minutes) min").tag(minutes)
+                    }
+                }
+                .labelsHidden()
+                .frame(width: 110)
+                .disabled(!vm.state.connected)
+            }
+
+            Divider()
+
             Toggle("Launch at Login", isOn: $launchAtLogin)
                 .toggleStyle(.switch)
                 .controlSize(.small)
@@ -47,5 +62,17 @@ struct SettingsView: View {
                 .toggleStyle(.switch)
                 .controlSize(.small)
         }
+    }
+
+    private let standbyOptions: [UInt8] = [0, 5, 10, 20, 30, 60, 120]
+
+    private var standbyBinding: Binding<UInt8> {
+        Binding(
+            get: { vm.state.standbyTimerMinutes ?? 0 },
+            set: { newValue in
+                guard let current = vm.state.standbyTimerMinutes, current != newValue else { return }
+                vm.setStandbyTimer(newValue)
+            }
+        )
     }
 }

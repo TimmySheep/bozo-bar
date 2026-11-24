@@ -70,10 +70,10 @@ struct MenuContent: View {
                 Button("Quit") {
                     NSApplication.shared.terminate(nil)
                 }
-                .buttonStyle(.borderless)
-                .foregroundStyle(.secondary)
+                .buttonStyle(.bordered)
                 .keyboardShortcut("q", modifiers: .command)
             }
+            .controlSize(.small)
             .padding(.horizontal, 12)
             .padding(.bottom, 10)
         }
@@ -83,22 +83,15 @@ struct MenuContent: View {
 
     private var devicePanel: some View {
         VStack(alignment: .leading, spacing: 0) {
-            // Header
             HStack {
                 Image(systemName: "headphones")
                     .font(.title2)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(vm.state.productName ?? "No Device")
                         .font(.headline)
-                    if vm.state.connected {
-                        Text("Connected")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    } else {
-                        Text("Disconnected")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
+                    Text(vm.state.connected ? "Connected" : "Disconnected")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                 }
                 Spacer()
                 if let batt = vm.state.battery.first {
@@ -115,18 +108,15 @@ struct MenuContent: View {
 
             Divider()
 
-            // Audio mode
+            // Audio mode — one icon per preset; the highlight follows the headset read-back.
             if !vm.state.audioModes.isEmpty {
-                sectionHeader("Audio Mode")
-                VStack(alignment: .leading, spacing: 0) {
-                    ForEach(vm.state.audioModes) { mode in
-                        selectableRow(title: mode.name, isSelected: vm.state.audioModeIndex == mode.modeIndex) {
-                            if vm.state.audioModeIndex != mode.modeIndex {
-                                vm.setAudioMode(mode.modeIndex)
-                            }
-                        }
-                    }
-                }
+                NoiseControlGrid(
+                    title: "Audio Mode",
+                    items: modeItems,
+                    selected: vm.state.audioModeIndex,
+                    enabled: vm.state.connected
+                ) { vm.setAudioMode($0) }
+                .padding(.top, 8)
             }
 
             // Legacy noise cancellation used by non-Ultra models.
@@ -146,34 +136,17 @@ struct MenuContent: View {
                 }
             }
 
-            // Spatial audio
             if vm.state.spatialAudio != nil {
-                Divider().padding(.vertical, 4)
-                sectionHeader("Immersive Audio")
-                Picker("Immersive Audio", selection: spatialAudioBinding) {
-                    ForEach(SpatialAudioMode.allCases) { mode in
-                        Text(mode.label).tag(mode)
-                    }
+                NoiseControlGrid(
+                    title: "Immersive Audio",
+                    items: immersiveItems,
+                    selected: vm.state.spatialAudio?.rawValue,
+                    enabled: vm.state.connected
+                ) { raw in
+                    guard let mode = SpatialAudioMode(rawValue: raw) else { return }
+                    vm.setSpatialAudio(mode)
                 }
-                .pickerStyle(.segmented)
-                .labelsHidden()
-                .padding(.horizontal, 12)
-            }
-
-            Divider().padding(.vertical, 4)
-
-            // Standby timer
-            HStack {
-                sectionHeader("Standby Timer")
-                Spacer()
-                Picker("Standby Timer", selection: standbyBinding) {
-                    ForEach(standbyOptions, id: \.self) { minutes in
-                        Text(minutes == 0 ? "Never" : "\(minutes) min").tag(minutes)
-                    }
-                }
-                .labelsHidden()
-                .frame(width: 110)
-                .padding(.trailing, 12)
+                .padding(.top, 8)
             }
 
             if let msg = vm.statusMessage {
@@ -184,28 +157,24 @@ struct MenuContent: View {
                     .padding(.horizontal, 12)
             }
 
-            Divider().padding(.vertical, 4)
+            Divider().padding(.vertical, 6)
 
-            // Actions
             HStack(spacing: 8) {
                 Button("Reconnect") { vm.reconnect() }
-                    .buttonStyle(.borderless)
                 Button("Power Off") { vm.powerOff() }
-                    .buttonStyle(.borderless)
                 Spacer()
                 Button { showSettings = true } label: {
                     Image(systemName: "gear")
                 }
-                .buttonStyle(.borderless)
-                .foregroundStyle(.secondary)
                 .accessibilityLabel("Settings")
+                .help("Settings")
                 Button("Quit") {
                     NSApplication.shared.terminate(nil)
                 }
-                .buttonStyle(.borderless)
-                .foregroundStyle(.secondary)
                 .keyboardShortcut("q", modifiers: .command)
             }
+            .buttonStyle(.bordered)
+            .controlSize(.small)
             .padding(.horizontal, 12)
             .padding(.bottom, 10)
         }
@@ -241,12 +210,27 @@ struct MenuContent: View {
                 Button("Quit") {
                     NSApplication.shared.terminate(nil)
                 }
-                .buttonStyle(.borderless)
-                .foregroundStyle(.secondary)
+                .buttonStyle(.bordered)
                 .keyboardShortcut("q", modifiers: .command)
             }
+            .controlSize(.small)
             .padding(.horizontal, 12)
             .padding(.bottom, 10)
+        }
+    }
+
+    // MARK: - Items
+
+    private var modeItems: [NoiseControlItem] {
+        vm.state.audioModes.map { mode in
+            NoiseControlItem(id: mode.modeIndex, title: mode.name, symbol: NoiseIcon.symbol(for: mode.name))
+        }
+    }
+
+    private var immersiveItems: [NoiseControlItem] {
+        SpatialAudioMode.allCases.map { mode in
+            NoiseControlItem(id: mode.rawValue, title: mode.label,
+                             symbol: NoiseIcon.immersiveSymbols[Int(mode.rawValue)])
         }
     }
 
@@ -260,28 +244,6 @@ struct MenuContent: View {
             .padding(.horizontal, 12)
             .padding(.top, 4)
             .padding(.bottom, 2)
-    }
-
-    private let standbyOptions: [UInt8] = [0, 5, 10, 20, 30, 60, 120]
-
-    private var spatialAudioBinding: Binding<SpatialAudioMode> {
-        Binding(
-            get: { vm.state.spatialAudio ?? .off },
-            set: { newValue in
-                guard let current = vm.state.spatialAudio, current != newValue else { return }
-                vm.setSpatialAudio(newValue)
-            }
-        )
-    }
-
-    private var standbyBinding: Binding<UInt8> {
-        Binding(
-            get: { vm.state.standbyTimerMinutes ?? 0 },
-            set: { newValue in
-                guard let current = vm.state.standbyTimerMinutes, current != newValue else { return }
-                vm.setStandbyTimer(newValue)
-            }
-        )
     }
 
     private func batteryIcon(_ pct: UInt8) -> String {
@@ -317,17 +279,18 @@ struct MenuContent: View {
     }
 
     private func selectableRow(title: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
-        Toggle(isOn: Binding(
-            get: { isSelected },
-            set: { requested in
-                if requested && !isSelected { action() }
+        Button(action: action) {
+            HStack {
+                Text(title)
+                Spacer()
+                if isSelected {
+                    Image(systemName: "checkmark")
+                        .foregroundStyle(.secondary)
+                }
             }
-        )) {
-            Text(title).frame(maxWidth: .infinity, alignment: .leading)
+            .contentShape(Rectangle())
         }
-        .toggleStyle(.button)
-        .tint(.gray)
-        .accessibilityAddTraits(isSelected ? .isSelected : [])
+        .buttonStyle(.plain)
         .padding(.horizontal, 12)
         .padding(.vertical, 4)
     }
