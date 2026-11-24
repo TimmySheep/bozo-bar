@@ -15,23 +15,68 @@ and QuietComfort headphones using the BMAP protocol. No companion app required.
 
 ## This fork
 
-A personal build based on [`NerdySouth/bozo-bar`](https://github.com/NerdySouth/bozo-bar) (MIT).
-Changes are listed in [CHANGELOG.md](CHANGELOG.md); the main ones are:
+**BozoBar is not my project.** It is a fork of [`NerdySouth/bozo-bar`](https://github.com/NerdySouth/bozo-bar),
+written by [NerdySouth](https://github.com/NerdySouth) and released under the MIT license. The original
+copyright notice is kept unchanged in [LICENSE](LICENSE), the upstream commit history is preserved here
+so every change can be traced back to it, and the upstream repository is still configured as the
+`upstream` remote.
 
-- Audio modes are enumerated per slot, which is what QuietComfort Ultra (Gen 1, firmware 1.6.7)
-  needs — the `0x1F/0x01` "get all modes" query returns error `0x05` on that model.
-- Noise control and immersive audio render as icon grids; the highlighted option follows the mode
-  the headset reports back, never a local guess.
-- Standby timer lives in Settings; the panel is a system `NSPopover`, so macOS draws its own frame
-  and material.
+The protocol knowledge behind the fixes comes from community work published elsewhere:
 
-**Prebuilt download:** see [Releases](../../releases). Requires macOS 13 or later. The app is signed
-with a Developer ID; if Gatekeeper still objects, right-click the app and choose Open.
+- [`airvzxf/bose-connect-app-linux`](https://github.com/airvzxf/bose-connect-app-linux) — BMAP packet
+  documentation and captures taken on QuietComfort Ultra firmware 1.6.7, which is the same firmware this
+  build was tested against.
+- [`aaronsb/bosectl`](https://github.com/aaronsb/bosectl) — function-block layout and the observation that
+  `SETGET` and `START` are not behind the cloud authentication that `SET` requires.
 
-**Not affiliated with Bose.** This talks to the headphones over a community reverse-engineered
-protocol (BMAP), not a supported API. Firmware updates can change or break it, and the protocol
-does not authenticate most settings — anything already paired within radio range can change them.
-Keep the official Bose app installed for firmware updates.
+What this fork changes (full detail in [CHANGELOG.md](CHANGELOG.md)):
+
+- Audio modes are enumerated per slot, because QuietComfort Ultra (Gen 1) answers the `0x1F/0x01`
+  "get all modes" query with error `0x05`; without this the mode list stays empty.
+- Noise control and immersive audio render as icon grids using SF Symbols, and the highlighted option
+  follows the mode the headset reports back rather than a local guess.
+- The panel is a system `NSPopover` (macOS draws the frame and material), and the standby timer moved
+  into Settings.
+
+**Download:** see [Releases](../../releases). Requires macOS 13 or later. Builds are signed with a
+Developer ID certificate; if Gatekeeper still objects, right-click the app and choose *Open*.
+
+**Not affiliated with Bose.** This app talks to the headphones over BMAP, a community
+reverse-engineered protocol, not a supported API. Firmware updates can change or break it. Most
+settings are written without authentication, so any already-paired device within radio range can change
+them too. Keep the official Bose app installed for firmware updates.
+
+---
+
+## 本分支说明
+
+**BozoBar 不是我的原创项目。** 它是 [`NerdySouth/bozo-bar`](https://github.com/NerdySouth/bozo-bar) 的
+分支，原作者是 [NerdySouth](https://github.com/NerdySouth)，以 MIT 许可证发布。原始的版权声明在
+[LICENSE](LICENSE) 中完整保留，上游的提交历史也一并保留在本仓库里，每一处改动都能追回到它的出处；
+上游仓库仍然配置为 `upstream` remote。
+
+这些修复背后的协议知识来自社区已公开的工作：
+
+- [`airvzxf/bose-connect-app-linux`](https://github.com/airvzxf/bose-connect-app-linux)：BMAP 报文文档，
+  以及在 QuietComfort Ultra **固件 1.6.7** 上抓取的原始数据包——本分支正是在同版本固件上测试的。
+- [`aaronsb/bosectl`](https://github.com/aaronsb/bosectl)：功能块（function block）的划分，以及
+  「`SET` 需要云端认证，而 `SETGET` / `START` 不需要」这一关键发现。
+
+本分支改动的内容（细节见 [CHANGELOG.md](CHANGELOG.md)）：
+
+- **按槽位逐个枚举音频模式**：一代 QuietComfort Ultra 对 `0x1F/0x01`（读取全部模式）返回错误 `0x05`，
+  不做这一步，模式列表会一直是空的。
+- 降噪与沉浸式音频改为**图标网格**（使用 SF Symbols），高亮跟随耳机回报的真实模式，而不是本地猜测。
+- 面板改用系统 `NSPopover`（外框与材质由 macOS 绘制），待机定时移入设置页。
+
+**下载**：见 [Releases](../../releases)。需要 macOS 13 或更高版本。构建使用 Developer ID 证书签名；
+如果 Gatekeeper 仍然拦截，请在 Finder 中右键点击 App 并选择「打开」。
+
+**与 Bose 官方无关。** 本应用通过 BMAP 与耳机通信，这是社区逆向出来的协议，不是官方支持的接口。
+固件更新可能改变甚至破坏它的行为。多数设置写入不需要认证，因此射频范围内任何已配对的设备都能修改
+这些设置。请保留官方 Bose App，用于接收固件更新。
+
+---
 
 ## Features
 
