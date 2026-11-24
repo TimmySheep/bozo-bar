@@ -1,0 +1,30 @@
+# Changelog
+
+All notable changes to this local build. Upstream commits are preserved in history; entries below cover only local work.
+
+## 1.0.3 — build 5
+
+### Fixed
+- Audio mode list stayed empty on QuietComfort Ultra (Gen 1, firmware 1.6.7): the headset answers the `0x1F/0x01` "get all modes" query with error `0x05`. Modes are now enumerated per slot (`0x1F/0x06`, slots 0–9) when that query yields nothing.
+- Selection no longer follows a local guess: tapping a row sends the switch command and the highlight waits for the headset's read-back. Opening the popover reads the current mode immediately and keeps polling every two seconds while it is open.
+- Package linked against the deployment target as its SDK (13.0), which prevented the modern system appearance. The build now verifies `minos` and `sdk` with `vtool` before packaging.
+
+### Changed
+- The status item hosts the system `NSPopover`; macOS draws the only frame and material. No custom panel, glass layer, corner radius, or window shadow is added by the app.
+- Device and Settings pages keep their upstream layout and controls. The popover follows the natural height of the active page instead of reserving the taller one.
+- Selected row uses a system button toggle (`.buttonStyle(.button)`) instead of a hand-drawn checkmark.
+
+### Added
+- `scripts/package-local.sh` builds an isolated bundle with the layered app icon, legacy `.icns` fallback and signature checks.
+- `tests/` contract checks for mode enumeration, switch commands, immersive audio commands and offscreen page sizing.
+
+## 1.0.2 — build 3
+
+### Fixed
+- Immersive Audio (Off / Still / Motion) returned to the panel.
+- Status item restored to the system headphones symbol with the original battery preference; the supplied artwork is used for the app icon only.
+
+## 1.0.1 — build 2
+
+### Added
+- Initial local build: menu bar panel, Quiet / Aware switching, custom app icon.

@@ -1,0 +1,12 @@
+{
+  "fill": {"solid": "srgb:0.9765,0.9765,0.9765,1.0000"},
+  "groups": [
+    {
+      "name": "Headphones",
+      "layers": [{"name": "Headphones", "image-name": "Foreground.png", "glass": false}],
+      "specular": false,
+      "translucency": {"enabled": false, "value": 0}
+    }
+  ],
+  "supported-platforms": {"squares": ["macOS"]}
+}
