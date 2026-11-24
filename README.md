@@ -13,6 +13,26 @@
 BozoBar lives in your menu bar and talks directly to Bose QuietComfort Ultra
 and QuietComfort headphones using the BMAP protocol. No companion app required.
 
+## This fork
+
+A personal build based on [`NerdySouth/bozo-bar`](https://github.com/NerdySouth/bozo-bar) (MIT).
+Changes are listed in [CHANGELOG.md](CHANGELOG.md); the main ones are:
+
+- Audio modes are enumerated per slot, which is what QuietComfort Ultra (Gen 1, firmware 1.6.7)
+  needs — the `0x1F/0x01` "get all modes" query returns error `0x05` on that model.
+- Noise control and immersive audio render as icon grids; the highlighted option follows the mode
+  the headset reports back, never a local guess.
+- Standby timer lives in Settings; the panel is a system `NSPopover`, so macOS draws its own frame
+  and material.
+
+**Prebuilt download:** see [Releases](../../releases). Requires macOS 13 or later. The app is signed
+with a Developer ID; if Gatekeeper still objects, right-click the app and choose Open.
+
+**Not affiliated with Bose.** This talks to the headphones over a community reverse-engineered
+protocol (BMAP), not a supported API. Firmware updates can change or break it, and the protocol
+does not authenticate most settings — anything already paired within radio range can change them.
+Keep the official Bose app installed for firmware updates.
+
 ## Features
 
 | Feature | Description |

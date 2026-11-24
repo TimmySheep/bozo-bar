@@ -51,8 +51,14 @@ for d in matching:
     print({k: d[k] for k in ('Name', 'AssetType', 'LayerCount', 'SizeOnDisk', 'PixelWidth', 'PixelHeight') if k in d})
 assert any(d.get('LayerCount', 0) >= 2 for d in matching), matching
 PY
-if ! codesign --force --options runtime --timestamp=none --sign 'Developer ID Application: Tianwei Huang (JY5U4D6JD3)' --entitlements BozoBar.entitlements "$app"; then
-  printf 'Developer ID was unavailable; use existing local ad-hoc signing scope.\n'
+# Set CODESIGN_IDENTITY to a Developer ID Application identity to sign for distribution;
+# with it unset the bundle is signed ad-hoc, which is fine for local use only.
+if [ -n "${CODESIGN_IDENTITY:-}" ] && \
+   codesign --force --options runtime --timestamp --sign "$CODESIGN_IDENTITY" \
+            --entitlements BozoBar.entitlements "$app"; then
+  printf 'Signed with: %s\n' "$CODESIGN_IDENTITY"
+else
+  printf 'Signing ad-hoc; set CODESIGN_IDENTITY to sign with a Developer ID.\n'
   codesign --force --sign - --entitlements BozoBar.entitlements "$app"
 fi
 plutil -lint "$p"
